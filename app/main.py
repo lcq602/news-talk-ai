@@ -12,6 +12,7 @@ from typing import Literal
 
 import httpx
 from dotenv import load_dotenv
+from app.coach import PracticeState, instruction_message
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -26,6 +27,8 @@ TUTOR_PROMPT = (ROOT / "prompts/english_tutor.md").read_text(encoding="utf-8")
 SESSION_LOCK = Lock()
 # In-memory sessions by design: cleared on restart; single worker only.
 SESSIONS: dict[str, list[dict[str, str]]] = {}
+PRACTICE: dict[str, PracticeState] = {}
+SESSION_BUSY: set[str] = set()
 MAX_TURNS = 30
 MAX_SESSIONS = 100
 MAX_MESSAGE_CHARS = 2000
@@ -50,6 +53,8 @@ class TutorResponse(BaseModel):
     corrections: list[Correction]
     useful_phrases: list[UsefulPhrase]
     follow_up_en: str
+    phase: Literal["comprehension", "discussion"] = "comprehension"
+    focus_tip: str | None = None
 
 
 class StartResult(BaseModel):
@@ -143,9 +148,11 @@ async def start_session() -> StartResult:
     with SESSION_LOCK:
         if len(SESSIONS) >= MAX_SESSIONS:
             raise HTTPException(429, detail="当前会话数量已满，请重启服务清理临时会话。")
-    opening = await ask_model([{"role": "user", "content": "OPENING TURN: greet me briefly and ask one question about the article. Do not provide corrections."}])
+    opening = await ask_model([instruction_message(PracticeState()), {"role": "user", "content": "OPENING TURN: greet me briefly and ask one factual comprehension question about the article. Do not provide corrections."}])
+    opening.phase = "comprehension"
     session_id = secrets.token_urlsafe(24)
     with SESSION_LOCK:
+        PRACTICE[session_id] = PracticeState()
         SESSIONS[session_id] = [
             {"role": "user", "content": "OPENING TURN: greet me briefly and ask one question about the article. Do not provide corrections."},
             {"role": "assistant", "content": opening.model_dump_json()},
@@ -159,25 +166,37 @@ async def chat(req: ChatRequest) -> TutorResponse:
     if not user_text:
         raise HTTPException(status_code=422, detail="请输入英文内容。")
     with SESSION_LOCK:
+        if req.session_id in SESSION_BUSY:
+            raise HTTPException(status_code=409, detail="上一条消息正在处理中，请勿重复发送。")
         history = SESSIONS.get(req.session_id)
         if history is None:
             raise HTTPException(status_code=404, detail="会话不存在或服务已重启，请重新开始。")
         if (len(history) - 2) // 2 >= MAX_TURNS:
             raise HTTPException(status_code=429, detail="本次练习达到 30 轮限制，请重新开始。")
         snapshot = list(history)
-    feedback = await ask_model([*snapshot, {"role": "user", "content": user_text}])
-    with SESSION_LOCK:
-        current = SESSIONS.get(req.session_id)
-        if current is None:
-            raise HTTPException(status_code=404, detail="会话已结束，请重新开始。")
-        # Prevent out-of-order parallel requests from silently corrupting history.
-        if len(current) != len(snapshot):
-            raise HTTPException(status_code=409, detail="上一条消息仍在处理中，请稍后重试。")
-        current.extend([
-            {"role": "user", "content": user_text},
-            {"role": "assistant", "content": feedback.model_dump_json()},
-        ])
-    return feedback
+        practice = PRACTICE[req.session_id]
+        coaching = instruction_message(practice)
+        SESSION_BUSY.add(req.session_id)
+    try:
+        # A system note supplies the stage and recurring error focus without
+        # letting user-provided article content override the tutor policy.
+        feedback = await ask_model([*snapshot, coaching, {"role": "user", "content": user_text}])
+        with SESSION_LOCK:
+            current = SESSIONS.get(req.session_id)
+            if current is None:
+                raise HTTPException(status_code=404, detail="会话已结束，请重新开始。")
+            if len(current) != len(snapshot):
+                raise HTTPException(status_code=409, detail="会话历史已变化，请重试。")
+            feedback.focus_tip = practice.record(feedback.corrections)
+            feedback.phase = practice.stage
+            current.extend([
+                {"role": "user", "content": user_text},
+                {"role": "assistant", "content": feedback.model_dump_json()},
+            ])
+        return feedback
+    finally:
+        with SESSION_LOCK:
+            SESSION_BUSY.discard(req.session_id)
 
 
 @app.delete("/api/session/{session_id}")
@@ -185,4 +204,6 @@ def delete_session(session_id: str) -> dict[str, bool]:
     with SESSION_LOCK:
         if SESSIONS.pop(session_id, None) is None:
             raise HTTPException(status_code=404, detail="会话不存在。")
+        PRACTICE.pop(session_id, None)
+        SESSION_BUSY.discard(session_id)
     return {"deleted": True}
