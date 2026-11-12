@@ -42,7 +42,10 @@ class PracticeState:
                 "STAGE: COMPREHENSION CHECK. Ask a single concrete question about a "
                 "fact, sequence, or cause explicitly described in the supplied passage. "
                 "Help the learner locate evidence. Do not ask a generic opinion question yet. "
-                "Two questions are a warm-up, NOT proof of understanding."
+                "Two questions are a warm-up, NOT proof of understanding. "
+                + ("This is the second comprehension response: AFTER feedback, ask one "
+                   "open-ended opinion question to move into DISCUSSION."
+                   if self.completed_answers == 1 else "")
             )
         else:
             phase = (
