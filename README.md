@@ -2,33 +2,51 @@
 
 > Read the news. Talk with AI. Improve your English.
 
-NewsTalk AI 是一个以真实新闻为话题的英语学习产品。核心目标不是“刷新闻”或“无限聊天”，而是帮助学习者把**读懂英文**转换成**能用英文表达观点**。
+NewsTalk AI 帮助用户通过阅读英文文章，与 AI 讨论文章主题，同时得到详细、准确、可理解的英语表达纠错。
 
-## 产品闭环
+## ✅ Python MVP（已提交代码，待配置自己的模型 API 实测）
 
-选择话题 → 阅读新闻/合法提供的节选 → 理解检查 → 与 AI 讨论 → 适度纠错 → 收藏表达 → 间隔复习 → 进步回顾
+第一版只提供：**一篇自定义英文文章 + 简单网页 + OpenAI 兼容接口 + AI 英语教练全面纠错**。
 
-## 当前状态
+- **后端**：Python 3.11 + FastAPI + httpx，使用 uv 管理依赖
+- **前端**：纯 HTML/CSS/JS，无需 Node.js
+- **文章**：[content/article.md](content/article.md)（原创虚构练习材料，不是真实新闻）
+- **AI 角色提示词**：[prompts/english_tutor.md](prompts/english_tutor.md)
+- **详细运行与验收说明**：[docs/06-python-mvp.md](docs/06-python-mvp.md)
 
-**Discovery / Documentation First（需求与方案调研阶段）**。尚未创建应用代码，也尚未确认第三方新闻正文用于 AI 分析的授权。请勿将 RSS / 文章可访问性理解为可转载或可交给大模型处理的许可。
+### Windows 运行
+
+```powershell
+git clone https://github.com/lcq602/news-talk-ai.git
+cd news-talk-ai
+Copy-Item .env.example .env
+# 在 .env 中填写 OPENAI_BASE_URL、OPENAI_API_KEY、OPENAI_MODEL
+uv sync
+uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+浏览器访问 **http://127.0.0.1:8000**。在另一个终端执行 `uv run pytest -q` 测试（测试使用模拟模型，不需要真实 API key）。
+
+`.env` 不可提交到 GitHub。模型服务要求兼容 `POST /chat/completions`。这版为**单机内存会话**，无登录与生产级限流，请勿公开部署到互联网。无流式输出、无数据库、无新闻抓取。尚未在真实第三方模型上进行端到端测试。
+
+### 英语纠错策略
+
+每轮会针对**拼写、语法、用词、自然度、标点与表达清晰度**检查所有明确且有学习价值的问题，输出逐条中文解释、完整英文润色句、话题回应和下一问。真正没有明显错误时不为了填满列表而虚构纠错；自然度建议也不能混同为语法错误。具体行为见 [Tutor Prompt](prompts/english_tutor.md)。
+
+## 远期规划（不是本次 MVP 功能）
+
+新闻发现 → 授权文章阅读 → AI 讨论 → 纠错 → 单词收藏 → 间隔复习。新闻正文用于转载或交给 AI 处理前必须确认相应许可。
 
 ## 文档导航
 
-| 文档 | 作用 |
+| 文档 | 内容 |
 |---|---|
-| [00-产品愿景与范围](docs/00-product-vision.md) | 定位、用户价值、MVP 边界 |
-| [01-调研与来源合规](docs/01-research-and-sources.md) | 教学依据、新闻源调查、版权风险 |
-| [02-产品需求 PRD](docs/02-prd.md) | 页面、功能、验收标准 |
-| [03-用户流程与 AI 教学](docs/03-user-flows-and-ai-tutor.md) | 完整学习闭环、状态机、AI 对话策略 |
-| [04-技术架构](docs/04-technical-design.md) | 系统模块、数据模型、接口、安全与成本 |
-| [05-里程碑与验证](docs/05-roadmap-and-validation.md) | 迭代计划、指标、待决策项 |
-
-## 开发原则
-
-1. 先证明“文章话题 → 英文有效表达 → 复习”闭环，再扩展语音和复杂 Agent。
-2. 默认**仅在有权使用的正文**上提供正文级 AI 讨论；否则仅展示标题、允许的摘要、来源链接，或由用户输入自己拥有处理权的文字。
-3. AI 表达纠错以不中断对话为先，事实解释区分新闻原文和 AI 推断。
-4. 用户可控制文章、对话、词汇存储和删除；API key 只放在服务端。
-5. 文档为 v0.1 工作假设，所有第三方条款、报价上线前重新核实。
+| [00-产品愿景与范围](docs/00-product-vision.md) | 定位与目标 |
+| [01-调研与来源合规](docs/01-research-and-sources.md) | 教学研究与新闻版权 |
+| [02-产品需求 PRD](docs/02-prd.md) | 产品需求及验收 |
+| [03-用户流程与 AI 教学](docs/03-user-flows-and-ai-tutor.md) | 学习流程和对话策略 |
+| [04-技术架构](docs/04-technical-design.md) | 未来架构参考 |
+| [05-里程碑与验证](docs/05-roadmap-and-validation.md) | 迭代计划 |
+| [06-Python MVP](docs/06-python-mvp.md) | **当前可运行版本的说明和限制** |
 
 最后更新：2026-11-12
