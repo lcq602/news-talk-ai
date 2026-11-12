@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NewsTalk AI · English Reading Practice</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f6f7f9; color: #18212d; font: 15px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { padding: 13px max(18px, calc((100vw - 1160px)/2)); background: white; border-bottom: 1px solid #e6e8ee; }
+    header strong { font-size: 18px; }
+    header small { margin-left: 12px; color: #697386; }
+    main { max-width: 1160px; margin: 24px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    section { background: white; border: 1px solid #e7e9ee; border-radius: 12px; min-width: 0; }
+    .article { padding: 28px; }
+    .article h1 { margin: 0 0 18px; font-size: 24px; line-height: 1.3; }
+    .article p { margin: 0 0 16px; }
+    .note { color: #64748b; font-size: 13px; }
+    .chat { display: flex; flex-direction: column; height: min(790px, calc(100vh - 110px)); min-height: 460px; }
+    .chat-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #eceef2; }
+    .chat-head h2 { margin: 0; font-size: 17px; }
+    .messages { flex: 1; overflow-y: auto; padding: 20px; }
+    .bubble { margin: 0 0 16px; }
+    .bubble .who { font-size: 12px; color: #67758a; font-weight: 650; }
+    .bubble .text { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .bubble.mine { background: #ecf3ff; padding: 10px 13px; border-radius: 10px; }
+    .bubble.bot { padding: 10px 0; }
+    .feedback { margin: 10px 0 0; padding: 12px; background: #f7f8fa; border-left: 3px solid #2f6dd0; border-radius: 5px; font-size: 14px; }
+    .feedback p { margin: 4px 0 10px; }
+    .feedback ul { padding-left: 22px; margin: 5px 0 10px; }
+    .feedback li { margin: 5px 0; }
+    .input-area { border-top: 1px solid #eceef2; padding: 14px; }
+    textarea { display: block; width: 100%; min-height: 78px; resize: vertical; border: 1px solid #cdd5e0; border-radius: 8px; font: inherit; padding: 9px 11px; }
+    button { border: none; background: #245db6; color: white; font: inherit; border-radius: 7px; padding: 8px 16px; cursor: pointer; }
+    button.secondary { background: #e8edf5; color: #26364c; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    #status { color: #58677a; font-size: 12px; flex: 1; }
+    .error { color: #b91c1c !important; }
+    @media(max-width: 850px) { main { grid-template-columns: 1fr; } .chat { height: 640px; } }
+  </style>
+</head>
+<body>
+  <header><strong>NewsTalk AI</strong><small>Read · Discuss · Improve</small></header>
+  <main>
+    <section class="article">
+      <div class="note">ORIGINAL LEARNING PASSAGE · B1 PRACTICE</div>
+      <div id="article"><p>正在加载文章...</p></div>
+      <p class="note">这是原创虚构练习材料，并非真实新闻。之后可替换 content/article.md。</p>
+    </section>
+    <section class="chat">
+      <div class="chat-head">
+        <h2>AI English Tutor</h2>
+        <button class="secondary" id="restart" type="button">新对话</button>
+      </div>
+      <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Chat messages">
+        <p class="note">点击“开始对话”，AI 会围绕左侧文章提问。</p>
+      </div>
+      <div class="input-area">
+        <textarea id="message" maxlength="2000" placeholder="Write your thoughts in English..." aria-label="Your English reply"></textarea>
+        <div class="actions">
+          <span id="status">Ready</span>
+          <button id="send" type="button">开始对话</button>
+        </div>
+        <div class="note">Enter 发送，Shift + Enter 换行。AI 会指出拼写、语法、用词和自然度问题。</div>
+      </div>
+    </section>
+  </main>
+<script>
+(() => {
+  const el = id => document.getElementById(id);
+  const messages = el('messages'), send = el('send'), input = el('message'), status = el('status');
+  let sessionId = null, busy = false;
+  function text(tag, value, parent, className) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    node.textContent = value;
+    parent.appendChild(node);
+    return node;
+  }
+  function setBusy(v, label) {
+    busy = v; send.disabled = v; el('restart').disabled = v; input.disabled = v;
+    status.textContent = label || (sessionId ? 'Ready' : 'Not started');
+    status.classList.remove('error');
+  }
+  async function api(url, options) {
+    const response = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+    let body;
+    try { body = await response.json(); } catch { throw new Error('服务返回无效 JSON'); }
+    if (!response.ok) throw new Error(typeof body.detail === 'string' ? body.detail : '请求失败');
+    return body;
+  }
+  function renderFeedback(f) {
+    const box = text('div', '', messages, 'bubble bot');
+    text('div', 'AI Tutor', box, 'who');
+    if (f.reply_en) text('div', f.reply_en, box, 'text');
+    if (f.follow_up_en) text('p', f.follow_up_en, box);
+    if (f.polished_version || f.corrections.length || f.useful_phrases.length) {
+      const feedback = text('div', '', box, 'feedback');
+      if (f.polished_version) {
+        text('strong', 'Natural version', feedback);
+        text('p', f.polished_version, feedback);
+      }
+      text('strong', f.corrections.length ? 'Corrections (' + f.corrections.length + ')' : '✓ No clear language errors found', feedback);
+      if (f.corrections.length) {
+        const list = text('ul', '', feedback);
+        for (const c of f.corrections) {
+          text('li', '[' + c.type + '] ' + c.original + ' → ' + c.suggested + ' — ' + c.explanation_zh, list);
+        }
+      }
+      if (f.useful_phrases.length) {
+        text('strong', 'Useful phrases', feedback);
+        const list = text('ul', '', feedback);
+        for (const p of f.useful_phrases) text('li', p.phrase + ' — ' + p.meaning_zh, list);
+      }
+    }
+    messages.scrollTop = messages.scrollHeight;
+  }
+  async function start() {
+    setBusy(true, 'AI is preparing a question...');
+    try {
+      const data = await api('/api/session', { method: 'POST' });
+      sessionId = data.session_id;
+      messages.replaceChildren();
+      renderFeedback(data.feedback);
+      send.textContent = '发送';
+      input.focus();
+    } catch (error) { status.textContent = error.message; status.classList.add('error'); }
+    finally { setBusy(false); }
+  }
+  async function submit() {
+    if (busy) return;
+    if (!sessionId) return start();
+    const content = input.value.trim();
+    if (!content) return;
+    setBusy(true, 'AI is reviewing your English...');
+    try {
+      const data = await api('/api/chat', { method: 'POST', body: JSON.stringify({ session_id: sessionId, message: content }) });
+      const bubble = text('div', '', messages, 'bubble mine');
+      text('div', 'You', bubble, 'who');
+      text('div', content, bubble, 'text');
+      input.value = '';
+      renderFeedback(data);
+    } catch (error) { status.textContent = error.message; status.classList.add('error'); }
+    finally { setBusy(false); }
+  }
+  send.addEventListener('click', submit);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); submit(); }
+  });
+  el('restart').addEventListener('click', async () => {
+    if (busy) return;
+    if (sessionId) {
+      try { await api('/api/session/' + encodeURIComponent(sessionId), { method: 'DELETE' }); }
+      catch { /* restart locally even if the remote session expired */ }
+    }
+    sessionId = null; input.value = '';
+    messages.replaceChildren();
+    text('p', '新会话未开始。', messages, 'note');
+    send.textContent = '开始对话';
+    status.textContent = 'Ready';
+  });
+  fetch('/api/article').then(r => { if (!r.ok) throw new Error('文章加载失败'); return r.json(); }).then(data => {
+    const area = el('article'); area.replaceChildren();
+    text('h1', data.title, area);
+    // No markdown renderer needed for this single trusted local article.
+    for (const paragraph of data.content.split(/\n\s*\n/)) {
+      if (paragraph.startsWith('# ')) continue;
+      if (paragraph.startsWith('---')) continue;
+      text('p', paragraph, area);
+    }
+  }).catch(error => { el('article').textContent = error.message; });
+})();
+</script>
+</body>
+</html>
