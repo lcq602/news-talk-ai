@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field, ValidationError
 ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 logger = logging.getLogger("newstalk")
-app = FastAPI(title="NewsTalk AI MVP", version="0.1.0")
+app = FastAPI(title="NewsTalk AI MVP", version="0.2.0")
 
 ARTICLE_TEXT = (ROOT / "content/article.md").read_text(encoding="utf-8")
 TUTOR_PROMPT = (ROOT / "prompts/english_tutor.md").read_text(encoding="utf-8")
