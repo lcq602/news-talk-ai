@@ -13,6 +13,7 @@ NewsTalk AI 帮助用户通过阅读英文文章，与 AI 讨论文章主题，�
 - **文章**：[content/article.md](content/article.md)（原创虚构练习材料，不是真实新闻）
 - **AI 角色提示词**：[prompts/english_tutor.md](prompts/english_tutor.md)
 - **详细运行与验收说明**：[docs/06-python-mvp.md](docs/06-python-mvp.md)
+- **v0.2 测试报告**：[docs/07-mvp-v02-test-report.md](docs/07-mvp-v02-test-report.md)
 
 ### Windows 运行
 
@@ -28,6 +29,14 @@ uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 浏览器访问 **http://127.0.0.1:8000**。在另一个终端执行 `uv run pytest -q` 测试（测试使用模拟模型，不需要真实 API key）。
 
 `.env` 不可提交到 GitHub。模型服务要求兼容 `POST /chat/completions`。这版为**单机内存会话**，无登录与生产级限流，请勿公开部署到互联网。无流式输出、无数据库、无新闻抓取。尚未在真实第三方模型上进行端到端测试。
+
+### MVP v0.2 新能力
+
+1. **纠错评测集**：41 条标注样例（10 条完全正确），区分真实错误与可选风格建议。用 `uv run python -m scripts.evaluate_tutor --limit 5` 对真实模型进行小规模抽样（按模型 API 计费）。
+2. **重复错误巩固**：同一会话内，明确错误类别重复至少两次，下一轮通过系统提示安排短句练习；仅为类别统计，不保证每次模型判断都正确。
+3. **先理解再讨论**：前两轮检查文章事实理解，接着引导观点表达和举例；不把两轮当成真正通过水平评测。
+
+本次隔离环境执行 **15 项自动化测试全部通过**（模拟模型和 HTTP 契约，**不代表真实 AI 纠错质量已经验证**）。详见 [v0.2 测试记录](docs/07-mvp-v02-test-report.md)。
 
 ### 英语纠错策略
 
@@ -47,6 +56,7 @@ uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 | [03-用户流程与 AI 教学](docs/03-user-flows-and-ai-tutor.md) | 学习流程和对话策略 |
 | [04-技术架构](docs/04-technical-design.md) | 未来架构参考 |
 | [05-里程碑与验证](docs/05-roadmap-and-validation.md) | 迭代计划 |
-| [06-Python MVP](docs/06-python-mvp.md) | **当前可运行版本的说明和限制** |
+| [06-Python MVP](docs/06-python-mvp.md) | v0.1 基础运行说明 |
+| [07-MVP v0.2 测试记录](docs/07-mvp-v02-test-report.md) | **当前版本：学习阶段、重复错误训练、评测集及限制** |
 
 最后更新：2026-11-12
