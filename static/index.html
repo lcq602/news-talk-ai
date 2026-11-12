@@ -92,9 +92,10 @@
   }
   function renderFeedback(f) {
     const box = text('div', '', messages, 'bubble bot');
-    text('div', 'AI Tutor', box, 'who');
+    text('div', 'AI Tutor · ' + (f.phase === 'discussion' ? '自由讨论' : '阅读理解'), box, 'who');
     if (f.reply_en) text('div', f.reply_en, box, 'text');
     if (f.follow_up_en) text('p', f.follow_up_en, box);
+    if (f.focus_tip) text('p', '📌 ' + f.focus_tip, box, 'note');
     if (f.polished_version || f.corrections.length || f.useful_phrases.length) {
       const feedback = text('div', '', box, 'feedback');
       if (f.polished_version) {
