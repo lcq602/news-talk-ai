@@ -35,3 +35,8 @@ def test_tracks_several_categories():
     state.record([{"type": "spelling"}, {"type": "word_choice"}])
     state.record([{"type": "word_choice"}, {"type": "spelling"}])
     assert state.recurring_types == ["spelling", "word_choice"]
+
+def test_two_errors_same_category_in_single_message_is_not_recurring():
+    state = PracticeState()
+    assert state.record([{"type": "grammar"}, {"type": "grammar"}]) is None
+    assert state.error_counts["grammar"] == 1
