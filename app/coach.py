@@ -67,10 +67,15 @@ class PracticeState:
 
     def record(self, corrections: list[Any]) -> str | None:
         self.completed_answers += 1
+        # Count a category once per learner TURN, not once per correction.
+        # Several grammar notes in one sentence are not evidence of repetition.
+        kinds_this_turn = set()
         for correction in corrections:
             kind = correction.type if hasattr(correction, "type") else correction.get("type")
             if kind in CORRECTION_TYPES:
-                self.error_counts[kind] += 1
+                kinds_this_turn.add(kind)
+        for kind in kinds_this_turn:
+            self.error_counts[kind] += 1
         recurring = self.recurring_types
         for kind in recurring:
             if kind not in self.review_issued_for:
