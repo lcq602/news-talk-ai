@@ -80,8 +80,10 @@
   }
   function setBusy(v, label) {
     busy = v; send.disabled = v; el('restart').disabled = v; input.disabled = v;
-    status.textContent = label || (sessionId ? 'Ready' : 'Not started');
-    status.classList.remove('error');
+    if (label || !status.classList.contains('error')) {
+      status.textContent = label || (sessionId ? 'Ready' : 'Not started');
+    }
+    if (v) status.classList.remove('error');
   }
   async function api(url, options) {
     const response = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
