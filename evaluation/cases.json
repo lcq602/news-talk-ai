@@ -1,0 +1,282 @@
+[
+  {
+    "id": "sp01",
+    "text": "The bookshop is very interesing.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "sp02",
+    "text": "Maya has many custumers.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "sp03",
+    "text": "The assitant sometimes makes mistakes.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "sp04",
+    "text": "AI helps with repetative questions.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "sp05",
+    "text": "Technology can be benificial.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "sp06",
+    "text": "She wants to improve effciency.",
+    "expect": [
+      "spelling"
+    ]
+  },
+  {
+    "id": "gr01",
+    "text": "AI can helps small businesses.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr02",
+    "text": "Maya don't trust the assistant.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr03",
+    "text": "She have many customers.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr04",
+    "text": "The assistant give wrong answers sometimes.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr05",
+    "text": "I agree with Maya because she care about people.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr06",
+    "text": "There is many ways to use AI.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr07",
+    "text": "She decided using an assistant.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr08",
+    "text": "I am interesting in technology.",
+    "expect": [
+      "word_choice",
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr09",
+    "text": "Yesterday she spend hours answering questions.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "gr10",
+    "text": "The AI should not replaces humans.",
+    "expect": [
+      "grammar"
+    ]
+  },
+  {
+    "id": "wc01",
+    "text": "I very like this idea.",
+    "expect": [
+      "word_choice",
+      "naturalness"
+    ]
+  },
+  {
+    "id": "wc02",
+    "text": "She made a decision to use an AI for answer questions.",
+    "expect": [
+      "grammar",
+      "word_choice"
+    ]
+  },
+  {
+    "id": "wc03",
+    "text": "Maya discussed with her customers about books.",
+    "expect": [
+      "grammar",
+      "naturalness",
+      "word_choice"
+    ]
+  },
+  {
+    "id": "wc04",
+    "text": "The assistant brings many convenient to customers.",
+    "expect": [
+      "word_choice",
+      "grammar"
+    ]
+  },
+  {
+    "id": "wc05",
+    "text": "She paid attention on the mistakes.",
+    "expect": [
+      "grammar",
+      "word_choice"
+    ]
+  },
+  {
+    "id": "wc06",
+    "text": "I prefer human communicate.",
+    "expect": [
+      "grammar",
+      "word_choice"
+    ]
+  },
+  {
+    "id": "nt01",
+    "text": "In my opinion, I think that AI is helpful to businesses.",
+    "expect": [
+      "naturalness"
+    ],
+    "optional": true
+  },
+  {
+    "id": "nt02",
+    "text": "As for me personally, I believe the AI assistant is useful.",
+    "expect": [
+      "naturalness"
+    ],
+    "optional": true
+  },
+  {
+    "id": "nt03",
+    "text": "AI has a lot of benefits for many different people.",
+    "expect": [
+      "naturalness"
+    ],
+    "optional": true
+  },
+  {
+    "id": "cl01",
+    "text": "It was good because it was good.",
+    "expect": [
+      "clarity",
+      "naturalness"
+    ]
+  },
+  {
+    "id": "cl02",
+    "text": "The thing with that thing is not good.",
+    "expect": [
+      "clarity"
+    ]
+  },
+  {
+    "id": "cl03",
+    "text": "Maya told her assistant about it, and it changed everything.",
+    "expect": [
+      "clarity"
+    ],
+    "optional": true
+  },
+  {
+    "id": "fa01",
+    "text": "Maya stopped speaking to customers completely.",
+    "expect": [
+      "factual"
+    ]
+  },
+  {
+    "id": "fa02",
+    "text": "The assistant never provided incorrect stock information.",
+    "expect": [
+      "factual"
+    ]
+  },
+  {
+    "id": "fa03",
+    "text": "Maya closed the shop after a month.",
+    "expect": [
+      "factual"
+    ]
+  },
+  {
+    "id": "ok01",
+    "text": "AI can save time, but people still need personal advice.",
+    "expect": []
+  },
+  {
+    "id": "ok02",
+    "text": "I think Maya made a sensible decision.",
+    "expect": []
+  },
+  {
+    "id": "ok03",
+    "text": "She checks the assistant's answers regularly.",
+    "expect": []
+  },
+  {
+    "id": "ok04",
+    "text": "I would rather ask a person for a book recommendation.",
+    "expect": []
+  },
+  {
+    "id": "ok05",
+    "text": "The technology is useful, but it is not perfect.",
+    "expect": []
+  },
+  {
+    "id": "ok06",
+    "text": "I agree that technology should support people.",
+    "expect": []
+  },
+  {
+    "id": "ok07",
+    "text": "Maya runs a small bookshop in a busy city.",
+    "expect": []
+  },
+  {
+    "id": "ok08",
+    "text": "Customers appreciate quick answers when the shop is closed.",
+    "expect": []
+  },
+  {
+    "id": "ok09",
+    "text": "I don't think AI should replace every human interaction.",
+    "expect": []
+  },
+  {
+    "id": "ok10",
+    "text": "What do you think about AI in small businesses?",
+    "expect": []
+  }
+]
